@@ -78,5 +78,8 @@ async def main() -> None:
     print(f"By caching system prompt you saved {saved_tokens} tokens")
     print(f"It took {time_taken} s to receive all answers from the ai model") 
 
+    with open("s01e01/output/suspects.json", mode='w') as f:
+        f.write(json.dumps(list_of_suspects))
+
 if __name__ == "__main__":
     asyncio.run(main())
