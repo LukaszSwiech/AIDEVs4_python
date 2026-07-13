@@ -2,7 +2,8 @@ import asyncio
 import json
 
 from . import prompt
-from . import ai
+from ..common.ai import chat
+from .tools import tools
 from .config import MAX_LLM_ITERATIONS
 from .tools import handlers
 
@@ -28,7 +29,7 @@ async def run_agent(user_promt: str, powerplant_list: str) -> str:
         print(f"""#############
 Iteration: {i+1}
 #############""")
-        response = await ai.chat(history)
+        response = await chat(history, tools=tools.tools, prompt_cache_key="findhim_agent", text={"verbosity": "low"})
         history += response.output
 
         tool_calls = [item for item in response.output if item.type == "function_call"]
