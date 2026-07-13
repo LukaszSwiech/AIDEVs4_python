@@ -1,17 +1,4 @@
-import os
-
-from openai import AsyncOpenAI
-
-client = AsyncOpenAI(
-    api_key=os.environ["OPEN_AI_KEY"]
-)
-
-async def chat(input, tools=None):
-    response =  await client.responses.create(
-        model="gpt-5-mini",
-        input=input,
-        prompt_cache_key="job-classifier-1",
-        text={
+TAGS_SCHEMA = {
             "format": {
                 "type": "json_schema",
                 "name": "tags",
@@ -25,6 +12,4 @@ async def chat(input, tools=None):
                     "additionalProperties": False
                 }
             }
-        },
-    )
-    return response
+        }

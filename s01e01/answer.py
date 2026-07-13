@@ -1,26 +1,18 @@
-import os
 import json
 
-from requests import post, exceptions
+from ..common.master_config import AIDEV_URL, API_KEY
+from ..common.utils import fetch_page
 
-URL = (
-    os.environ["AIDEV_URL"] + "/verify"
-)
+URL = (AIDEV_URL + "/verify")
 
 def send_answer(task_name, answer):
     agent_message = {
-        "apikey": os.environ["API_KEY"],
+        "apikey": API_KEY,
         "task": task_name,
         "answer": answer
         }
-    try:
-        agent_answer = post(URL, json=agent_message)
-    except exceptions.RequestException as e:
-        raise RuntimeError(f"Failed to POST the response: {e}") from e
-    
-    # print(agent_message)
+    answer = fetch_page("POST", URL, json=agent_message)
+    if isinstance(answer, dict) and "Error" in answer:
+        raise RuntimeError("Failed to POST the response.")
 
-    try:
-        print(agent_answer.json())
-    except json.JSONDecodeError:
-        print(f"Server returned non-JSON: {agent_answer.text}")
+    print(answer)
