@@ -15,7 +15,7 @@ from . import config
 from ..common.master_config import API_KEY
 from ..common.utils import fetch_page
 from .agent import run_agent
-from .ai import token_usage
+from ..common.ai import token_usage
 
 @dataclass
 class Suspect:
