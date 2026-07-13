@@ -1,3 +1,11 @@
+# SUMMARY:
+# 1. Lesson technique applied: structured output via JSON Schema — each suspect's job description is
+#    classified into fixed tags through a strict `json_schema` response format, so tags are always a
+#    machine-parseable list rather than free text; suspects tagged "transport" are shortlisted.
+# 2. Techniques: JSON Schema structured output (strict mode), prompt caching (stable system prompt +
+#    shared prompt_cache_key), concurrent per-suspect calls via asyncio.gather, token usage tracking.
+# 3. Reusing: common/utils.fetch_file, common/ai.chat + token_usage, common/master_config.
+
 import os
 import csv
 import asyncio
