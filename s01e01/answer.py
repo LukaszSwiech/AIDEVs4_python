@@ -1,5 +1,3 @@
-import json
-
 from ..common.master_config import AIDEV_URL, API_KEY
 from ..common.utils import fetch_page
 

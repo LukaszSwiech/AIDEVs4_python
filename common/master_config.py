@@ -4,6 +4,11 @@ OPENAI_KEY = os.environ["OPENAI_KEY"]
 API_KEY = os.environ["API_KEY"]
 AIDEV_URL = os.environ["AIDEV_URL"]
 AIDEV_ANSWER_URL = AIDEV_URL + "verify"
+PUBLIC_URL = os.environ["PUBLIC_URL"]
 MODEL = "gpt-5-mini"
+
+FROG_PROXY_SERVER = os.environ["FROG_PROXY_SERVER"]
+FROG_PROXY_PORT = os.environ["FROG_PROXY_PORT"]
+FROG_PUBLIC_PORT = os.environ["FROG_PUBLIC_PORT"]
 
 TASK_NAMES = {"s01e01": "people", "s01e02": "findhim", "s01e03": "proxy", "s01e04": "sendit", "s01e05": "railway"}

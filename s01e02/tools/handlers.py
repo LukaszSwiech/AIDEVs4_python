@@ -1,7 +1,6 @@
-from math import radians, sin, cos, sqrt, atan2, inf
+from math import radians, sin, cos, sqrt, atan2
 from time import sleep
 
-from requests import get, post, exceptions
 from ...common.utils import fetch_page
 from ..config import TASK_NAME, NOMINATIM_URL, NOMINATIM_HEADER, SUSPECT_ACCESS_LEVEL_URL
 from ...common.master_config import API_KEY, AIDEV_ANSWER_URL

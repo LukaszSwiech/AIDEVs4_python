@@ -8,7 +8,7 @@ client = AsyncOpenAI(
 )
 token_usage = TokenUsage()
 
-async def chat(msg: str, model: str=MODEL, prompt_cache_key: str=None, text: str=None, tools: str=None):
+async def chat(msg: list[dict], model: str=MODEL, prompt_cache_key: str | None = None, text: dict=None, tools: list[dict]=None):
     response =  await client.responses.create(
         model=model,
         input=msg,

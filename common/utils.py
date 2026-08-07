@@ -1,6 +1,6 @@
 from requests import request, exceptions
 
-def _fetch(method: str, url: str, parse_json: bool=True, **kwargs) -> dict|None:
+def _fetch(method: str, url: str, parse_json: bool=True, **kwargs) -> dict|bytes:
     try:
         r = request(method, url, **kwargs)
         r.raise_for_status()
@@ -14,8 +14,8 @@ def _fetch(method: str, url: str, parse_json: bool=True, **kwargs) -> dict|None:
     except exceptions.RequestException as e:
         return {"Error": str(e)}
     
-def fetch_page(method: str, url: str, **kwargs) -> list:
+def fetch_page(method: str, url: str, **kwargs) -> dict:
     return _fetch(method, url, **kwargs)
 
-def fetch_file(method: str, url: str, **kwargs) -> str:
+def fetch_file(method: str, url: str, **kwargs) -> bytes:
     return _fetch(method, url, parse_json=False, **kwargs)
