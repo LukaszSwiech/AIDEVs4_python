@@ -1,20 +1,23 @@
 # SUMMARY:
-# 1. Lesson technique applied: MCP (Model Context Protocol) — the two package tools run in a
-#    separate stdio subprocess; the client discovers them at runtime via list_tools() and
-#    converts their schemas to OpenAI function definitions, so the agent's toolset is never
-#    hardcoded on the client side.
-# 2. A long-lived conversational agent instead of a one-shot script: the AI Devs hub drives a
-#    multi-turn chat against an HTTP webhook that the script exposes publicly through an SSH
-#    reverse tunnel it opens and tears down itself; per-sessionID history keeps the persona
-#    coherent across turns until the hub returns the flag.
-# 3. Concurrency: a single asyncio loop owns the MCP session while ThreadingHTTPServer serves
-#    requests from worker threads — the two are bridged with run_coroutine_threadsafe and
-#    call_soon_threadsafe; tool calls within one turn run in parallel via asyncio.gather.
-# 4. Techniques: function calling (strict JSON schemas), small model (gpt-5-mini), prompt caching
-#    (stable system prefix + prompt_cache_key), AsyncExitStack + try/finally for deterministic
-#    cleanup of the MCP subprocess and the SSH tunnel, persona prompt with a hidden objective.
-# 5. Reusing: common/ai.chat, common/utils.fetch_page, common/token_usage.TokenUsage,
-#    common/master_config.
+# 1. MCP host/client/server: the package tools live in a separate stdio subprocess, discovered at
+#    runtime via list_tools() and converted to OpenAI function schemas. The host namespaces tool
+#    names (proxy__check_package) to prevent cross-server collisions and strips the prefix on call.
+# 2. Tools designed for the model, not for a developer: self-describing schemas (Annotated +
+#    pydantic Field) carry the contract, so the system prompt no longer has to explain the tools.
+# 3. Dynamic hints/recovery_hints in every tool response: success hints reinforce the next step,
+#    error hints prescribe recovery.
+# 4. A long-lived conversational agent instead of a one-shot script: the AI Devs hub drives a
+#    multi-turn chat against an HTTP webhook exposed through an SSH reverse tunnel the script opens
+#    and tears down itself; per-sessionID history keeps the persona coherent across turns.
+# 5. Concurrency: a single asyncio loop owns the MCP session while ThreadingHTTPServer serves
+#    requests from worker threads; tool calls within one turn run in parallel.
+# 6. Also: strict function-calling schemas, small model (gpt-5-mini), prompt caching (stable system
+#    prefix + prompt_cache_key), AsyncExitStack + try/finally for deterministic cleanup of the MCP
+#    subprocess and the SSH tunnel, persona prompt with a hidden objective. Reusing: common/ai.chat,
+#    common/utils.fetch_page, common/token_usage.TokenUsage, common/master_config.
+#
+# TODO: no graceful degradation on OpenAI rate limits — the webhook returns 500 and drops the
+# operator's session instead of stalling in persona.
 
 import logging
 from rich.logging import RichHandler
@@ -23,8 +26,8 @@ import threading
 import asyncio
 import subprocess
 
-from ..common.master_config import PUBLIC_URL, AIDEV_ANSWER_URL, API_KEY, FROG_PROXY_SERVER, FROG_PROXY_PORT, FROG_PUBLIC_PORT
-from .config import TASK_NAME, WEBHOOK_PORT, REMOTE_TUNNEL
+from ..common.master_config import PUBLIC_URL, AIDEV_ANSWER_URL, API_KEY, FROG_PROXY_SERVER, FROG_PROXY_PORT
+from .config import TASK_NAME, REMOTE_TUNNEL
 from ..common.utils import fetch_page
 from .mcp_agent import client as mcp_client
 from .webhook import server as webhook_server

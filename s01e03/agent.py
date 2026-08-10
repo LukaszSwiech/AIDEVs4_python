@@ -13,7 +13,8 @@ def _tool_output(call_id: str, output: str) -> dict:
 async def execute_tool(item, mcp_client) -> dict:
     try:
         args = json.loads(item.arguments)
-        result = await mcp_client.session.call_tool(name=item.name, arguments=args)
+        tool_name = item.name.removeprefix(f"{mcp_client.server_name}__")
+        result = await mcp_client.session.call_tool(name=tool_name, arguments=args)
     except Exception as e:
         return _tool_output(item.call_id, json.dumps({"Error": str(e)}))
 

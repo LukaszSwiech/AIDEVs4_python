@@ -12,13 +12,14 @@ class MCPClient:
         self.stdio = None
         self.write = None
         self.open_ai_tools: list[dict] = []
+        self.server_name: str | None = None
 
     async def _build_openai_tools(self):
         response = await self.session.list_tools()
         self.open_ai_tools = [
             {
                 "type": "function",
-                "name": tool.name,
+                "name": f"{self.server_name}__{tool.name}",
                 "description": tool.description,
                 "parameters": tool.inputSchema | {"additionalProperties": False},
                 "strict": True,
@@ -42,7 +43,9 @@ class MCPClient:
         self.stdio, self.write = stdio_transport
         self.session = await self.exit_stack.enter_async_context(ClientSession(self.stdio, self.write))
 
-        await self.session.initialize()
+        init_result = await self.session.initialize()
+        self.server_name = init_result.serverInfo.name
+        
         await self._build_openai_tools()
         logging.info(f"Connected to server with tools: {self.open_ai_tools}")
 

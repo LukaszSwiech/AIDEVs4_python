@@ -10,7 +10,7 @@ def _fetch(method: str, url: str, parse_json: bool=True, **kwargs) -> dict|bytes
             details = r.json()
         except ValueError:
             details = r.text[:300]
-        return {"Error": f"HTTP {r.status_code} from {url}", "Details:": details}
+        return {"Error": f"HTTP {r.status_code} from {url}", "Details": details}
     except exceptions.RequestException as e:
         return {"Error": str(e)}
     
