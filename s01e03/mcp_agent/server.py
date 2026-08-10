@@ -3,12 +3,13 @@ import logging
 from typing import Annotated
 from pydantic import Field
 
+from ...common.logs import setup_logging
 from ..config import TASK_NAME, DESTINATION, PACKAGE_URL
 from ...common.master_config import API_KEY
 from ...common.utils import fetch_page
 
 mcp = FastMCP(f"{TASK_NAME}")
-logging.getLogger("mcp.server").setLevel(logging.WARNING)
+setup_logging()
 
 @mcp.tool(structured_output=False)
 def check_package(

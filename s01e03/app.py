@@ -19,24 +19,18 @@
 # TODO: no graceful degradation on OpenAI rate limits — the webhook returns 500 and drops the
 # operator's session instead of stalling in persona.
 
-import logging
-from rich.logging import RichHandler
-from rich.console import Console
 import threading
 import asyncio
 import subprocess
+import logging
 
+from ..common.logs import setup_logging
 from ..common.master_config import PUBLIC_URL, AIDEV_ANSWER_URL, API_KEY, FROG_PROXY_SERVER, FROG_PROXY_PORT
 from .config import TASK_NAME, REMOTE_TUNNEL
 from ..common.utils import fetch_page
 from .mcp_agent import client as mcp_client
 from .webhook import server as webhook_server
 from ..common.ai import token_usage
-
-handlers = []
-handlers.append(RichHandler(console=Console(stderr=True), rich_tracebacks=True))
-
-logging.basicConfig(level=logging.INFO,format="%(message)s", handlers=handlers)
 
 async def init_mcp() -> mcp_client.MCPClient:
     client = mcp_client.MCPClient()
@@ -53,6 +47,8 @@ def kill_proxy_server():
 
 async def main():
  
+    setup_logging()
+
     task_trigger = {
         "apikey": API_KEY,
         "task": TASK_NAME,
