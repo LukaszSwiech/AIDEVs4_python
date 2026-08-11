@@ -1,9 +1,12 @@
+import logging
+
 from ..common.master_config import AIDEV_URL, API_KEY
 from ..common.utils import fetch_page
+from ..common.logs import setup_logging
 
 URL = (AIDEV_URL + "/verify")
 
-def send_answer(task_name, answer):
+def send_answer(task_name, answer):    
     agent_message = {
         "apikey": API_KEY,
         "task": task_name,
@@ -13,4 +16,4 @@ def send_answer(task_name, answer):
     if isinstance(answer, dict) and "Error" in answer:
         raise RuntimeError("Failed to POST the response.")
 
-    print(answer)
+    logging.info(answer)

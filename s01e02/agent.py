@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 
 from . import prompt
 from ..common.ai import chat
@@ -13,7 +14,7 @@ async def execute_tool(item) -> dict:
         result = handlers.handlers[item.name](**args)
     except Exception as e:
         result = {"Error": str(e)}
-    print(f"Calling tool -> {item.name}")
+    logging.info(f"Calling tool -> {item.name}")
     return {
         "type": "function_call_output",
         "call_id": item.call_id,
@@ -26,7 +27,7 @@ async def run_agent(user_promt: str, powerplant_list: str) -> str:
             {"role": "user", "content": content}]
 
     for i in range(MAX_LLM_ITERATIONS):
-        print(f"""#############
+        logging.info(f"""#############
 Iteration: {i+1}
 #############""")
         response = await chat(history, tools=tools.tools, prompt_cache_key="findhim_agent", text={"verbosity": "low"})
@@ -34,10 +35,10 @@ Iteration: {i+1}
 
         tool_calls = [item for item in response.output if item.type == "function_call"]
         if not tool_calls:
-            print(f"Agent returend answer -> {response.output_text}")
+            logging.info(f"Agent returend answer -> {response.output_text}")
             return response.output_text
 
         outputs = await asyncio.gather(*(execute_tool(item) for item in tool_calls))
         history += outputs
     else:
-        print("Max number of iterations reached")
+        logging.error("Max number of iterations reached")

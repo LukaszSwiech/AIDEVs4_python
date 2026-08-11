@@ -10,11 +10,13 @@ import os
 import csv
 import asyncio
 import json
+import logging
 
 from . import answer
 from . import schema
 from ..common.ai import chat, token_usage
 from ..common.utils import fetch_file
+from ..common.logs import setup_logging
 from .config import SYSTEM_PROMPT, URL, OUTPUT_PATH, TASK_NAME
 
 CURRENT_YEAR = 2026
@@ -62,6 +64,7 @@ async def get_suspect_list(suspects: list) -> list:
     return suspect_list
 
 async def main() -> None:
+    setup_logging()
 
     get_suspects_csv_file(URL, POTENTIAL_SUS_FILEPATH)
     potential_suspects = get_potential_suspects(POTENTIAL_SUS_FILEPATH)

@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from . import config
 from ..common.master_config import API_KEY
 from ..common.utils import fetch_page
+from ..common.logs import setup_logging
 from .agent import run_agent
 from ..common.ai import token_usage
 
@@ -45,6 +46,8 @@ def get_powerplant_locations() -> list:
     return result
 
 def main() -> None:
+    setup_logging()
+
     suspects = []
     list_of_suspects = load_suspects_from_file(config.INPUT_PATH, config.INPUT_FILENAME)
 

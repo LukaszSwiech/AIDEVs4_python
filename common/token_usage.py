@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 
 @dataclass
 class TokenUsage:
@@ -13,6 +14,6 @@ class TokenUsage:
 
     def log_total(self) -> None:
         pct = self.cached / self.input * 100 if self.input else 0
-        print(f"""Tokens total summary:
+        logging.info(f"""Tokens total summary:
               - input: {self.input} (cached: {self.cached} {pct:.0f}%),
               - output: {self.output}""")

@@ -1,5 +1,6 @@
 from math import radians, sin, cos, sqrt, atan2
 from time import sleep
+import logging
 
 from ...common.utils import fetch_page
 from ..config import TASK_NAME, NOMINATIM_URL, NOMINATIM_HEADER, SUSPECT_ACCESS_LEVEL_URL
@@ -44,7 +45,7 @@ def send_answer(name: str, surname: str, access_level: str, plant_code: str) -> 
         "powerPlant": plant_code
     }
     result = fetch_page("POST",AIDEV_ANSWER_URL, json={"apikey": API_KEY, "task": TASK_NAME, "answer": answer})
-    print(result)
+    logging.info(result)
     return result
 
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
