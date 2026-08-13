@@ -31,6 +31,7 @@ from ..common.utils import fetch_page
 from .mcp_agent import client as mcp_client
 from .webhook import server as webhook_server
 from ..common.ai import token_usage
+from ..common.agent import make_mcp_tool_executor
 
 async def init_mcp() -> mcp_client.MCPClient:
     client = mcp_client.MCPClient()
@@ -64,9 +65,13 @@ async def main():
         start_proxy_server()
 
         loop = asyncio.get_running_loop()
+
+        execute_tool = make_mcp_tool_executor(client.server_name, client.session.call_tool)
+        tools = client.open_ai_tools
+
         shutdown_event = asyncio.Event()
 
-        server_thread = threading.Thread(target=webhook_server.run, args=(loop, client, shutdown_event), daemon=True)
+        server_thread = threading.Thread(target=webhook_server.run, args=(loop, tools, execute_tool, shutdown_event), daemon=True)
         server_thread.start()
 
         init_task_result = fetch_page("POST", AIDEV_ANSWER_URL, json=task_trigger)

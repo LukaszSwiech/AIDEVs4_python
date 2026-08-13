@@ -2,10 +2,11 @@ import json
 import asyncio
 import logging
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+from collections.abc import Callable, Awaitable
+from typing import Any
 
-from ..agent import run_agent
+from ..agent import run_proxy_agent
 from ..config import WEBHOOK_PORT
-from ..mcp_agent.client import MCPClient
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -43,7 +44,7 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
             self.server.loop.call_soon_threadsafe(self.server.shutdown_event.set)
         else:
             try:
-                future = asyncio.run_coroutine_threadsafe(run_agent(session_id, msg, self.server.mcp_client), self.server.loop)
+                future = asyncio.run_coroutine_threadsafe(run_proxy_agent(session_id, msg, self.server.tools, self.server.execute_tool), self.server.loop)
                 ai_response = future.result(timeout=30)
             except Exception as e:
                 logging.exception("Agent failed")
@@ -57,13 +58,14 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
 
-def run(loop:asyncio.AbstractEventLoop, client:MCPClient, shutdown_event:asyncio.Event, server_class=ThreadingHTTPServer, handler_class=SimpleRequestHandler):
+def run(loop:asyncio.AbstractEventLoop, tools:list[dict], execute_tool: Callable[[Any], Awaitable[dict]], shutdown_event:asyncio.Event, server_class=ThreadingHTTPServer, handler_class=SimpleRequestHandler):
     server_address = ("127.0.0.1", WEBHOOK_PORT)
     httpd = server_class(server_address, handler_class)
     logging.info(f"Listening on http://localhost:{server_address[1]}")
 
     httpd.loop = loop
-    httpd.mcp_client = client
+    httpd.tools = tools
+    httpd.execute_tool = execute_tool
     httpd.shutdown_event = shutdown_event
     httpd.serve_forever()
     httpd.server_close()

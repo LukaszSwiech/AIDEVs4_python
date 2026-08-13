@@ -15,7 +15,7 @@ from . import config
 from ..common.master_config import API_KEY
 from ..common.utils import fetch_page
 from ..common.logs import setup_logging
-from .agent import run_agent
+from .agent import run_proxy_agent
 from ..common.ai import token_usage
 
 @dataclass
@@ -57,7 +57,7 @@ def main() -> None:
         suspect_location_list = get_suspect_locations(suspect["name"], suspect["surname"])
         suspects.append(Suspect(suspect["name"], suspect["surname"], suspect["born"], locations=suspect_location_list))
 
-    asyncio.run(run_agent([ob.__dict__ for ob in suspects], powerplant_list))
+    asyncio.run(run_proxy_agent([ob.__dict__ for ob in suspects], powerplant_list))
     token_usage.log_total()
 
 if __name__ == "__main__":
