@@ -1,44 +1,17 @@
-import asyncio
 import json
-import logging
 
 from . import prompt
-from ..common.ai import chat
 from .tools import tools
 from .config import MAX_LLM_ITERATIONS
 from .tools import handlers
+from ..common.agent import make_local_tool_executor, run_agent
 
-async def execute_tool(item) -> dict:
-    try:
-        args = json.loads(item.arguments)
-        result = handlers.handlers[item.name](**args)
-    except Exception as e:
-        result = {"Error": str(e)}
-    logging.info(f"Calling tool -> {item.name}")
-    return {
-        "type": "function_call_output",
-        "call_id": item.call_id,
-        "output": json.dumps(result)
-    }
-
-async def run_agent(user_promt: str, powerplant_list: str) -> str:
-    content = json.dumps({"suspects": user_promt, "power_plants": powerplant_list}, ensure_ascii=False)
+async def run_proxy_agent(user_prompt: str, powerplant_list: str) -> str:
+    content = json.dumps({"suspects": user_prompt, "power_plants": powerplant_list}, ensure_ascii=False)
     history = [{"role": "system", "content": prompt.SUSPECT_SEARCH_AGENT},
             {"role": "user", "content": content}]
 
-    for i in range(MAX_LLM_ITERATIONS):
-        logging.info(f"""#############
-Iteration: {i+1}
-#############""")
-        response = await chat(history, tools=tools.tools, prompt_cache_key="findhim_agent", text={"verbosity": "low"})
-        history += response.output
+    execute_tool = make_local_tool_executor(handlers.handlers)
 
-        tool_calls = [item for item in response.output if item.type == "function_call"]
-        if not tool_calls:
-            logging.info(f"Agent returend answer -> {response.output_text}")
-            return response.output_text
-
-        outputs = await asyncio.gather(*(execute_tool(item) for item in tool_calls))
-        history += outputs
-    else:
-        logging.error("Max number of iterations reached")
+    agent_response = await run_agent(history, tools.tools, execute_tool, MAX_LLM_ITERATIONS, "findhim_agent", {"verbosity": "low"}, "s01e02")
+    return agent_response
