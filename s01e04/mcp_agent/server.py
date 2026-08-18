@@ -144,7 +144,7 @@ def send_answer(
     """
     Send the final declaration to the Hub for verification and, if accepted, receive the flag.
     """
-    result = fetch_page("POST",AIDEV_ANSWER_URL, json={"apikey": API_KEY, "task": TASK_NAME, "answer": answer_declaration})
+    result = fetch_page("POST",AIDEV_ANSWER_URL, json={"apikey": API_KEY, "task": TASK_NAME, "answer": {"declaration": answer_declaration},})
 
     if "Error" not in result:
         return {
@@ -157,7 +157,7 @@ def send_answer(
     api_code = details.get("code") if isinstance(details, dict) else None
     error_description = details.get("description") if isinstance(details, dict) else None
 
-    if api_code == -906:
+    if api_code == -21:
         return {
             "status": "rejected",
             "sent_answer": answer_declaration,
