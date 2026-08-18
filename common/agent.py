@@ -32,7 +32,6 @@ def make_local_tool_executor(handlers: dict[str, Callable]) -> ToolExecutor:
             result = handlers[item.name](**args)
         except Exception as e:
             result = {"Error": str(e)}
-        logging.info(f"Calling tool -> {item.name}")
         return _tool_output(item.call_id, json.dumps(result))
     return execute_tool
 
@@ -76,11 +75,11 @@ Iteration: {i+1} for Agent: {agent_name}
             return response.output_text
 
         for item in tool_calls:
-            logging.info(f"Agent called tool: {item.name} with args: {item.arguments}")
+            logging.info(f"  → tool: {item.name} with args: {item.arguments}")
         outputs = await asyncio.gather(*(execute_tool(item) for item in tool_calls))
         history += outputs
         for output in outputs:
-            logging.info(f'Tool_output: {output}')
+            logging.info(f'  ← result: {output}')
 
     raise MaxToolRoundExceeded(
         f"Agent {agent_name} did not finish within {max_tool_rounds} tool rounds."
