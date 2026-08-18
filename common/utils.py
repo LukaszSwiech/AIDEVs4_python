@@ -17,5 +17,5 @@ def _fetch(method: str, url: str, parse_json: bool=True, **kwargs) -> dict|bytes
 def fetch_page(method: str, url: str, **kwargs) -> dict:
     return _fetch(method, url, **kwargs)
 
-def fetch_file(method: str, url: str, **kwargs) -> bytes:
+def fetch_file(method: str, url: str, **kwargs) -> bytes|dict:
     return _fetch(method, url, parse_json=False, **kwargs)
