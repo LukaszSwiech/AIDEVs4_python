@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "anthropic>=0.124.0",
+    "google-genai>=2.19.0",
     "mcp[cli]>=1.28.1",
     "openai>=2.45.0",
     "pydantic>=2.13.4",
