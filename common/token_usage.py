@@ -8,9 +8,15 @@ class TokenUsage:
     cached: int = 0
 
     def add(self, usage) -> None:
-        self.input += usage.input_tokens
-        self.output += usage.output_tokens
-        self.cached += usage.input_tokens_details.cached_tokens
+        self.input += usage.prompt_tokens
+        self.output += usage.completion_tokens
+        if usage.prompt_tokens_details is not None and usage.prompt_tokens_details.cached_tokens is not None:
+            self.cached += usage.prompt_tokens_details.cached_tokens
+
+    # def add_responses(self, usage) -> None:
+    #     self.input += usage.input_tokens
+    #     self.output += usage.output_tokens
+    #     self.cached += usage.input_tokens_details.cached_tokens
 
     def log_total(self) -> None:
         pct = self.cached / self.input * 100 if self.input else 0
