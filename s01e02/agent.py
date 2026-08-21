@@ -13,5 +13,5 @@ async def run_proxy_agent(user_prompt: str, powerplant_list: str) -> str:
 
     execute_tool = make_local_tool_executor(handlers.handlers)
 
-    agent_response = await run_agent(history, tools.tools, execute_tool, MAX_LLM_ITERATIONS, "findhim_agent", {"verbosity": "low"}, "s01e02")
+    agent_response = await run_agent(history=history, tools=tools.tools, execute_tool=execute_tool, max_tool_rounds=MAX_LLM_ITERATIONS, prompt_cache_key="findhim_agent", agent_name="s01e02", verbosity="low")
     return agent_response

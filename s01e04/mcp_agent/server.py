@@ -87,8 +87,14 @@ async def understand_image(
     desc_image_content = [{
         "role": "user",
         "content": [
-            { "type": "input_image", "image_url": image_url },
-            { "type": "input_text", "text": question }
+            {"type": "text", "text": question },
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": image_url
+                } 
+            }
+            
         ]
 
     }]
@@ -116,7 +122,7 @@ async def understand_image(
 
     return {
         "status": "ok",
-        "data": describe_image.output_text,
+        "data": describe_image.choices[0].message.content,
         "hints": [
             "Treat this as part of the documentation content, not just a description - if it contains a table, codes, route data or other structured values, use them exactly as transcribed when filling in the declaration, do not paraphrase or round them.",
             "If this text looks incomplete or vague for what you expected from this image, call this tool again on the same image_url with a more specific question rather than assuming the image had no relevant data.",

@@ -48,11 +48,11 @@ def get_potential_suspects(file_path: str) -> list:
 
 async def get_suspect_list(suspects: list) -> list:
     suspect_list = []
-    tasks = [chat([SYSTEM_PROMPT, {"role": "user", "content": suspect['job']}], text=schema.TAGS_SCHEMA, prompt_cache_key="job-classifier-1") for suspect in suspects]
+    tasks = [chat([SYSTEM_PROMPT, {"role": "user", "content": suspect['job']}], prompt_cache_key="job-classifier-1", response_format=schema.TAGS_SCHEMA) for suspect in suspects]
     responses = await asyncio.gather(*tasks)
 
     for suspect, response in zip(suspects, responses):
-        tag = json.loads(response.output_text)["tags"]
+        tag = json.loads(response.choices[0].message.content)["tags"]
         if 'transport' in tag:
             suspect_list.append({"name": suspect["name"],
                                     "surname": suspect["surname"],

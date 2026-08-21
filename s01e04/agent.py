@@ -15,7 +15,7 @@ async def run_proxy_agent(tools:list[dict],  execute_tool: Callable[[Any], Await
                {"role": "user", "content": user_message}]
  
     try:
-        text_response = await run_agent(history, tools, execute_tool, MAX_LLM_ITERATIONS, "sendit", {"verbosity": "low"}, "s01e04")
+        text_response = await run_agent(history=history, tools=tools, execute_tool=execute_tool, max_tool_rounds=MAX_LLM_ITERATIONS, prompt_cache_key="sendit", agent_name="s01e04", verbosity="low")
     except MaxToolRoundExceeded:
         logging.warning(f"sendit agent hit max iterations without final answer. History: {history}")
         return "Agent nie zdazyl udzielic odpowiedzi. Przekroczono limit iteracji"

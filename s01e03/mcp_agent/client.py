@@ -19,10 +19,12 @@ class MCPClient:
         self.open_ai_tools = [
             {
                 "type": "function",
-                "name": f"{self.server_name}__{tool.name}",
-                "description": tool.description,
-                "parameters": tool.inputSchema | {"additionalProperties": False},
-                "strict": True,
+                "function": {
+                    "name": f"{self.server_name}__{tool.name}",
+                    "description": tool.description,
+                    "parameters": tool.inputSchema | {"additionalProperties": False},
+                    "strict": True,
+                },
             }
             for tool in response.tools
         ]

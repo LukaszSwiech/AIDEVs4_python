@@ -14,7 +14,7 @@ async def run_proxy_agent(session_id: str, msg:str, tools:list[dict],  execute_t
     sessions[session_id].append({"role": "user", "content": msg})
 
     try:
-        return await run_agent(sessions[session_id], tools, execute_tool, MAX_LLM_ITERATIONS, "proxy_agent", {"verbosity": "low"}, "s01e03")
+        return await run_agent(history=sessions[session_id], tools=tools, execute_tool=execute_tool, max_tool_rounds=MAX_LLM_ITERATIONS, prompt_cache_key="proxy_agent", agent_name="s01e03", verbosity="low")
     except MaxToolRoundExceeded:
         logging.warning(f"Agent {session_id} hit max iterations without final answer.")
         return"Agent nie zdazyl udzielic odpowiedzi. Przekroczono limit iteracji"

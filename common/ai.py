@@ -9,13 +9,14 @@ client = AsyncOpenAI(
 
 token_usage = TokenUsage()
 
-async def chat(msg: list[dict], model: str = MODEL, prompt_cache_key: str |None = None, response_format: dict|None = None, tools: list[dict]|None = None):
+async def chat(msg: list[dict], model: str = MODEL, prompt_cache_key: str |None = None, response_format: dict|None = None, tools: list[dict]|None = None, verbosity: str|None = None):
     completion =  await client.chat.completions.create(
         model=model,
         messages=msg,
         prompt_cache_key=prompt_cache_key,
         tools=tools,
-        response_format=response_format
+        response_format=response_format,
+        verbosity=verbosity
     )
 
     if completion.usage:

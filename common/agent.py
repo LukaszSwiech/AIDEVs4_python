@@ -51,7 +51,7 @@ def make_mcp_tool_executor(mcp_server_name: str, mcp_session_call_tool: Callable
         return _tool_output(item.id, f"Tool {item.function.name} returned no text content.")
     return execute_tool
 
-async def run_agent(history: list, tools: list[dict], execute_tool: ToolExecutor, max_tool_rounds: int, prompt_cache_key: str|None = None, response_format: dict|None = None, agent_name: str |None = None) -> str:
+async def run_agent(history: list, tools: list[dict], execute_tool: ToolExecutor, max_tool_rounds: int, prompt_cache_key: str|None = None, response_format: dict|None = None, agent_name: str |None = None, verbosity: str| None = None) -> str:
     """Run the tool-calling loop until the model replies without requesting tools.
 
     `history` is mutated in place: the assistant message and tool results are
@@ -67,7 +67,7 @@ async def run_agent(history: list, tools: list[dict], execute_tool: ToolExecutor
         logging.info(f"""#############
 Iteration: {i+1} for Agent: {agent_name}
 #############""")
-        response = await chat(history, tools=tools, prompt_cache_key=prompt_cache_key, response_format=response_format)
+        response = await chat(history, tools=tools, prompt_cache_key=prompt_cache_key, response_format=response_format, verbosity=verbosity)
         message = response.choices[0].message
         history.append(message)
         
