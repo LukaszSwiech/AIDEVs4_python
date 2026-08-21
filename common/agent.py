@@ -21,62 +21,63 @@ class MaxToolRoundExceeded(Exception):
 
 ToolExecutor = Callable[[Any], Awaitable[dict]]
 
-def _tool_output(call_id: str, output: str) -> dict:
-    return {"type": "function_call_output", "call_id": call_id, "output": output}
+def _tool_output(tool_call_id: str, output: str) -> dict:
+    return {"role": "tool", "tool_call_id": tool_call_id, "content": output}
 
 def make_local_tool_executor(handlers: dict[str, Callable]) -> ToolExecutor:
     """Errors are returned as tool output, never raised - run_agent depends on this."""
     async def execute_tool(item) -> dict:
         try:
-            args = json.loads(item.arguments)
-            result = handlers[item.name](**args)
+            args = json.loads(item.function.arguments)
+            result = handlers[item.function.name](**args)
         except Exception as e:
             result = {"Error": str(e)}
-        return _tool_output(item.call_id, json.dumps(result))
+        return _tool_output(item.id, json.dumps(result))
     return execute_tool
 
 def make_mcp_tool_executor(mcp_server_name: str, mcp_session_call_tool: Callable[..., Awaitable[Any]]) -> ToolExecutor:
     """Errors are returned as tool output, never raised - run_agent depends on this."""
     async def execute_tool(item) -> dict:
         try:
-            args = json.loads(item.arguments)
-            tool_name = item.name.removeprefix(f"{mcp_server_name}__")
+            args = json.loads(item.function.arguments)
+            tool_name = item.function.name.removeprefix(f"{mcp_server_name}__")
             result = await mcp_session_call_tool(name=tool_name, arguments=args)
         except Exception as e:
-            return _tool_output(item.call_id, json.dumps({"Error": str(e)}))
+            return _tool_output(item.id, json.dumps({"Error": str(e)}))
 
         text_block = next((b for b in result.content if b.type == 'text'), None)
         if text_block:
-            return _tool_output(item.call_id, text_block.text)
-        return _tool_output(item.call_id, f"Tool {item.name} returned no text content.")
+            return _tool_output(item.id, text_block.text)
+        return _tool_output(item.id, f"Tool {item.function.name} returned no text content.")
     return execute_tool
 
-async def run_agent(history: list, tools: list[dict], execute_tool: ToolExecutor, max_tool_rounds: int, prompt_cache_key: str|None = None, text: dict|None = None, agent_name: str |None = None) -> str:
+async def run_agent(history: list, tools: list[dict], execute_tool: ToolExecutor, max_tool_rounds: int, prompt_cache_key: str|None = None, response_format: dict|None = None, agent_name: str |None = None) -> str:
     """Run the tool-calling loop until the model replies without requesting tools.
 
-    `history` is mutated in place: model output and tool results are appended to the
-    caller's list, so the caller keeps the full conversation after this returns.
+    `history` is mutated in place: the assistant message and tool results are
+    appended to the caller's list, so the caller keeps the full conversation
+    after this returns.
 
-    `execute_tool` receives one function_call item and must return a
-    `function_call_output` dict. It must not raise - an exception would leave a
-    function_call in `history` with no matching output, which invalidates every
-    later request in that conversation.
+    `execute_tool` receives one tool call (an item from `message.tool_calls`)
+    and must return a `{"role": "tool", ...}` message dict. It must not raise -
+    an exception would leave a tool call in `history` with no matching result,
+    which invalidates every later request in that conversation.
     """
     for i in range(max_tool_rounds):
         logging.info(f"""#############
 Iteration: {i+1} for Agent: {agent_name}
 #############""")
-        response = await chat(history, tools=tools, prompt_cache_key=prompt_cache_key, text=text)
-        history += response.output
+        response = await chat(history, tools=tools, prompt_cache_key=prompt_cache_key, response_format=response_format)
+        message = response.choices[0].message
+        history.append(message)
         
-        tool_calls = [item for item in response.output if item.type == "function_call"]
-        if not tool_calls:
-            logging.info(f"-> {response.output_text}")
-            return response.output_text
+        if not message.tool_calls:
+            logging.info(f"-> {message.content}")
+            return message.content
 
-        for item in tool_calls:
-            logging.info(f"  → tool: {item.name} with args: {item.arguments}")
-        outputs = await asyncio.gather(*(execute_tool(item) for item in tool_calls))
+        for item in message.tool_calls:
+            logging.info(f"  → tool: {item.function.name} with args: {item.function.arguments}")
+        outputs = await asyncio.gather(*(execute_tool(item) for item in message.tool_calls))
         history += outputs
         for output in outputs:
             logging.info(f'  ← result: {output}')
