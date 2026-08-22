@@ -1,11 +1,13 @@
 import os
 
 OPENAI_KEY = os.environ["OPENAI_KEY"]
+NVIDIA_KEY = os.environ["NVIDIA_KEY"]
+
 API_KEY = os.environ["API_KEY"]
 AIDEV_URL = os.environ["AIDEV_URL"]
 AIDEV_ANSWER_URL = AIDEV_URL + "verify"
 PUBLIC_URL = os.environ["PUBLIC_URL"]
-MODEL = "gpt-5-mini"
+DEFAULT_MODEL = "gpt-5-mini"
 
 FROG_PROXY_SERVER = os.environ["FROG_PROXY_SERVER"]
 FROG_PROXY_PORT = os.environ["FROG_PROXY_PORT"]
